@@ -30,22 +30,23 @@ def ReceiveMessage():
         emsg = server.recv(1024)
         msg = RemovePadding(AESKey.decrypt(emsg))
         if msg == FLAG_QUIT:
-            print("\n[!] Server was shutdown by admin")
+            print("\n[!] Server down! Over")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
-            print("\n[!] Server's encrypted message \n",  emsg)
-            print("\n[!] SERVER SAID : ", msg)
+            print("\nAbbot> ", msg.decode("utf-8"))
 
 
 def SendMessage():
     while True:
-        msg = input("[>] YOUR MESSAGE : ")
+        msg = input("")
+        msg = " "+msg
         en = AESKey.encrypt(Padding(msg))
         server.send(en)
         if msg == FLAG_QUIT:
+            print("If I'm not back in 5 mins, just wait longer\n\n\n\n")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
-            print("\n[!] Your encrypted message \n ", en)
+            continue
 
 
 if __name__ == "__main__":
@@ -103,17 +104,13 @@ if __name__ == "__main__":
         # receive server public key,hash of public,eight byte and hash of eight byte
         fGet = server.recv(4072)
         split = fGet.split(b"\:")
-        print(fGet)
         toDecrypt = split[0]
         serverPublic = split[1]
-        print("\n[!] Server's public key\n")
         decrypted = RSA.importKey(private).decrypt(toDecrypt.replace(b"\r\n", b''))
         splittedDecrypt = decrypted.split(b":")
         eightByte = splittedDecrypt[0]
         hashOfEight = splittedDecrypt[1]
         hashOfSPublic = splittedDecrypt[2]
-        print("\n[!] Client's Eight byte key in hash\n")
-        print(hashOfEight)
 
         # hashing for checking
         sess = hashlib.md5(eightByte)
@@ -121,15 +118,11 @@ if __name__ == "__main__":
 
         hashObj = hashlib.md5(serverPublic)
         server_public_hash = hashObj.hexdigest()
-        print("server_public_hash :", server_public_hash, "\nhashOfSPublic :", hashOfSPublic, "\nsession :", session,"\nhashOfEight :", hashOfEight)
-        print("\n[!] Matching server's public key & eight byte key\n")
         if server_public_hash == hashOfSPublic.decode("utf-8") and session == hashOfEight.decode("utf-8"):
             # encrypt back the eight byte key with the server public key and send it
-            print("\n[!] Sending encrypted session key\n")
             serverPublic = RSA.importKey(serverPublic).encrypt(eightByte, None)
             server.send(serverPublic[0])
             # creating 128 bits key with 16 bytes
-            print("\n[!] Creating AES key\n")
             key_128 = eightByte + eightByte[::-1]
             AESKey = AES.new(key_128, AES.MODE_CBC,IV=key_128)
             # receiving ready

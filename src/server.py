@@ -86,13 +86,15 @@ def ConnectionSetup():
 
 def send_message(socketClient,AESk):
     while True:
-        msg = input("\n[>] ENTER YOUR MESSAGE : ")
+        msg = input("\n")
+        msg = " "+msg
         en = AESk.encrypt(Padding(msg))
         socketClient.send(en)
         if msg == FLAG_QUIT:
+            print("Hasta la vista, Baby")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
-            print("\n[!] Your encrypted message \n ", en)
+            continue
 
 
 def broadcast_usr(uname, socketClient,AESk):
@@ -106,8 +108,7 @@ def broadcast_usr(uname, socketClient,AESk):
                     print("\n"+uname+" left the conversation")
                 else:
                     b_usr(socketClient, uname, data)
-                    print("\n[!] ", uname, " SAID : ", data)
-                    print("\n[!] Client's encrypted message\n ",  en)
+                    print("\n", uname.decode("utf-8"), "> ", data.decode("utf-8"))
         except Exception as x:
             print(x.message)
             break
@@ -166,11 +167,11 @@ if __name__ == "__main__":
     print("[1] Auto connect by with broadcast IP & PORT\n[2] Manually enter IP & PORT\n")
     ask = input("[>] ")
     if ask == YES:
-        host = get_ip_address('wlp2s0')
+        host = get_ip_address('wlp0s20f3')
         port = 8080
     elif ask == NO:
-        host = input("Host : ")
-        port = int(input("Port : "))
+        host = ""
+        port = 33000
     else:
         print("[!] Invalid selection")
         os.kill(os.getpid(), signal.SIGKILL)
