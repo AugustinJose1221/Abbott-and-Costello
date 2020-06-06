@@ -17,7 +17,7 @@ import struct
 from Crypto import Random
 import Crypto.Cipher.AES as AES
 from Crypto.PublicKey import RSA
-
+from time import sleep
 
 def get_ip_address(ifname):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -91,6 +91,7 @@ def send_message(socketClient,AESk):
         en = AESk.encrypt(Padding(msg))
         socketClient.send(en)
         if msg == FLAG_QUIT:
+            sleep(1)
             print("Hasta la vista, Baby")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
@@ -104,11 +105,11 @@ def broadcast_usr(uname, socketClient,AESk):
             en = data
             if data:
                 data = RemovePadding(AESk.decrypt(data))
-                if data == FLAG_QUIT:
-                    print("\n"+uname+" left the conversation")
+                if data.decode("utf-8") == FLAG_QUIT:
+                    print("\n",uname.decode("utf-8")," left the conversation")
                 else:
                     b_usr(socketClient, uname, data)
-                    print("\n", uname.decode("utf-8"), "> ", data.decode("utf-8"))
+                    print(uname.decode("utf-8"), "> ", data.decode("utf-8"))
         except Exception as x:
             print(x.message)
             break
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     AESKey = ""
     CONNECTION_LIST = []
     FLAG_READY = "Ready"
-    FLAG_QUIT = "quit"
+    FLAG_QUIT = " quit"
     YES = "1"
     NO = "2"
 

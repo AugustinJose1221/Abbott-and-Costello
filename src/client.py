@@ -29,11 +29,11 @@ def ReceiveMessage():
     while True:
         emsg = server.recv(1024)
         msg = RemovePadding(AESKey.decrypt(emsg))
-        if msg == FLAG_QUIT:
+        if msg.decode("utf-8") == FLAG_QUIT:
             print("\n[!] Server down! Over")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
-            print("\nAbbot> ", msg.decode("utf-8"))
+            print("Abbot> ", msg.decode("utf-8"))
 
 
 def SendMessage():
@@ -43,7 +43,7 @@ def SendMessage():
         en = AESKey.encrypt(Padding(msg))
         server.send(en)
         if msg == FLAG_QUIT:
-            print("If I'm not back in 5 mins, just wait longer\n\n\n\n")
+            print("\n\n\nIf I'm not back in 5 mins, just wait longer\n\n\n\n")
             os.kill(os.getpid(), signal.SIGKILL)
         else:
             continue
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     server = ""
     AESKey = ""
     FLAG_READY = "Ready"
-    FLAG_QUIT = "quit"
+    FLAG_QUIT = " quit"
     # 10.1.236.227
     # public key and private key
     random = Random.new().read
