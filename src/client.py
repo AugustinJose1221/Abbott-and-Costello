@@ -92,8 +92,10 @@ if __name__ == "__main__":
     check = False
 
     try:
+        print("Starting connection")
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.connect((host, port))
+        print("Trying to connect...")
         check = True
     except BaseException:
         print("\n[!] Check Server Address or Port")
