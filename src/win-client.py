@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun  3 13:45:16 2020
+Created on Sun Jun  7 10:59:46 2020
 
 @author: augustinjose
 """
@@ -14,6 +14,8 @@ import hashlib
 from Crypto import Random
 import Crypto.Cipher.AES as AES
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
+import ast
 import signal
 
 
@@ -68,7 +70,7 @@ if __name__ == "__main__":
     #print(public)
     #print("\n",private)
 
-    host = "" #input("Host : ")
+    host = input("Host : ")
     port = int(input("Port : "))
 #    host = "127.0.0.1"
 #    port = 5599
@@ -108,7 +110,9 @@ if __name__ == "__main__":
         split = fGet.split(b"\:")
         toDecrypt = split[0]
         serverPublic = split[1]
-        decrypted = RSA.importKey(private).decrypt(toDecrypt.replace(b"\r\n", b''))
+        #decrypted = RSA.importKey(private).decrypt(toDecrypt.replace(b"\r\n", b''))
+        decryptor = PKCS1_OAEP.new(RSA.importKey(private))
+        decrypted = decryptor.decrypt(ast.literal_eval(str(toDecrypt.replace(b"\r\n", b''))))
         splittedDecrypt = decrypted.split(b":")
         eightByte = splittedDecrypt[0]
         hashOfEight = splittedDecrypt[1]
@@ -122,8 +126,9 @@ if __name__ == "__main__":
         server_public_hash = hashObj.hexdigest()
         if server_public_hash == hashOfSPublic.decode("utf-8") and session == hashOfEight.decode("utf-8"):
             # encrypt back the eight byte key with the server public key and send it
-            serverPublic = RSA.importKey(serverPublic).encrypt(eightByte, None)
-            server.send(serverPublic[0])
+            encryptor = PKCS1_OAEP.new(RSA.importKey(serverPublic))
+            serverPublic = encryptor.encrypt(eightByte) 
+            server.send(serverPublic)
             # creating 128 bits key with 16 bytes
             key_128 = eightByte + eightByte[::-1]
             AESKey = AES.new(key_128, AES.MODE_CBC,IV=key_128)
