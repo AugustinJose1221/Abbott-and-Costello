@@ -42,7 +42,7 @@ def SendMessage():
     while True:
         msg = input("")
         msg = " "+msg
-        en = AESKey.encrypt(Padding(msg))
+        en = AESKeyEn.encrypt(Padding(msg))
         server.send(en)
         if msg == FLAG_QUIT:
             print("\n\n\nIf I'm not back in 5 mins, just wait longer\n\n\n\n")
@@ -132,6 +132,7 @@ if __name__ == "__main__":
             # creating 128 bits key with 16 bytes
             key_128 = eightByte + eightByte[::-1]
             AESKey = AES.new(key_128, AES.MODE_CBC,IV=key_128)
+            AESKeyEn = AES.new(key_128, AES.MODE_CBC,IV=key_128)
             # receiving ready
             serverMsg = server.recv(2048)
             serverMsg = RemovePadding(AESKey.decrypt(serverMsg))
