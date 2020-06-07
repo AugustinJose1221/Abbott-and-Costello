@@ -21,7 +21,6 @@ import os
 import signal
 import threading
 import hashlib
-import fcntl
 import struct
 from Crypto import Random
 import Crypto.Cipher.AES as AES
@@ -31,6 +30,7 @@ import ast
 from time import sleep
 
 def get_ip_address(ifname):
+    import fcntl
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return socket.inet_ntoa(fcntl.ioctl(s.fileno(),0x8915,struct.pack('256s', bytes(ifname[:15], "utf-8")))[20:24])
     #return "127.0.0.1"
