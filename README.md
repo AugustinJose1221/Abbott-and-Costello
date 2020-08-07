@@ -1,4 +1,4 @@
 # Abbott-and-Costello
-Post-Apocalyptic Communication System
+Post-apocalyptic communication system
 
 This is a client-server communication system.
