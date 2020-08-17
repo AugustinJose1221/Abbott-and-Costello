@@ -33,7 +33,8 @@ def ReceiveMessage():
         msg = RemovePadding(AESKey.decrypt(emsg))
         if msg.decode("utf-8") == FLAG_QUIT:
             print("\n[!] Server down! Over")
-            os.kill(os.getpid(), signal.SIGKILL)
+            os._exit(1)
+            os.kill(os.getpid(), signal.SIGTERM)
         else:
             print("Abbot> ", msg.decode("utf-8"))
 
@@ -42,11 +43,12 @@ def SendMessage():
     while True:
         msg = input("")
         msg = " "+msg
-        en = AESKeyEn.encrypt(Padding(msg))
+        en = AESKeyEn.encrypt(bytes(Padding(msg),"utf-8"))
         server.send(en)
         if msg == FLAG_QUIT:
             print("\n\n\nIf I'm not back in 5 mins, just wait longer\n\n\n\n")
-            os.kill(os.getpid(), signal.SIGKILL)
+            os._exit(1)
+            os.kill(os.getpid(), signal.SIGTERM)
         else:
             continue
 
@@ -84,7 +86,7 @@ if __name__ == "__main__":
         file = open('private.txt', 'wb')
         file.write(private)
         file.close()
-    
+
         file = open('public.txt', 'wb')
         file.write(public)
         file.close()
@@ -127,7 +129,7 @@ if __name__ == "__main__":
         if server_public_hash == hashOfSPublic.decode("utf-8") and session == hashOfEight.decode("utf-8"):
             # encrypt back the eight byte key with the server public key and send it
             encryptor = PKCS1_OAEP.new(RSA.importKey(serverPublic))
-            serverPublic = encryptor.encrypt(eightByte) 
+            serverPublic = encryptor.encrypt(eightByte)
             server.send(serverPublic)
             # creating 128 bits key with 16 bytes
             key_128 = eightByte + eightByte[::-1]

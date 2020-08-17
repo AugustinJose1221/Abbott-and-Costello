@@ -66,6 +66,7 @@ def ConnectionSetup():
                 fSend = eightByte + b":" + bytes(session, "utf-8") + b":" + bytes(my_hash_public, "utf-8")
                 encryptor = PKCS1_OAEP.new(clientPublic)
                 fSend = encryptor.encrypt(fSend)
+                print("fSend\n",fSend)
                 #fSend = clientPublic.encrypt(fSend, None)
                 client.send(fSend + b"\:" + public)
 
@@ -80,14 +81,17 @@ def ConnectionSetup():
                         print("\n[!] Creating AES key\n")
                         key_128 = eightByte + eightByte[::-1]
                         AESKey = AES.new(key_128, AES.MODE_CBC,IV=key_128)
-                        clientMsg = AESKey.encrypt(Padding(FLAG_READY))
+                        AESKey2 = AES.new(key_128, AES.MODE_CBC,IV=key_128)
+                        print(Padding(FLAG_READY))
+                        clientMsg = AESKey.encrypt(bytes(Padding(FLAG_READY), "utf-8"))
+                        print("clientMsg\n\n",clientMsg)
                         client.send(clientMsg)
                         print("\n[!] Waiting for client's name\n")
                         # client name
                         clientMsg = client.recv(2048)
                         CONNECTION_LIST.append((clientMsg, client))
                         print("\n"+clientMsg.decode("utf-8")+" IS CONNECTED")
-                        threading_client = threading.Thread(target=broadcast_usr,args=[clientMsg,client,AESKey])
+                        threading_client = threading.Thread(target=broadcast_usr,args=[clientMsg,client,AESKey2])
                         threading_client.start()
                         threading_message = threading.Thread(target=send_message,args=[client,AESKey])
                         threading_message.start()
@@ -102,12 +106,13 @@ def send_message(socketClient,AESk):
     while True:
         msg = input("\n")
         msg = " "+msg
-        en = AESk.encrypt(Padding(msg))
+        en = AESk.encrypt(bytes(Padding(msg), "utf-8"))
         socketClient.send(en)
         if msg == FLAG_QUIT:
             sleep(1)
             print("Hasta la vista, Baby")
-            os.kill(os.getpid(), signal.SIGKILL)
+            os._exit(1)
+            os.kill(os.getpid(), signal.SIGTERM)
         else:
             continue
 
@@ -125,7 +130,7 @@ def broadcast_usr(uname, socketClient,AESk):
                     b_usr(socketClient, uname, data)
                     print(uname.decode("utf-8"), "> ", data.decode("utf-8"))
         except Exception as x:
-            print(x.message)
+            print(x)
             break
 
 
@@ -189,7 +194,8 @@ if __name__ == "__main__":
         port = 33000
     else:
         print("[!] Invalid selection")
-        os.kill(os.getpid(), signal.SIGKILL)
+        os._exit(1)
+        os.kill(os.getpid(), signal.SIGTERM)
 
     print("\n[!] Server IP "+host+" & PORT "+str(port))
 
@@ -202,8 +208,3 @@ if __name__ == "__main__":
     # accept clients
     threading_accept = threading.Thread(target=ConnectionSetup)
     threading_accept.start()
-
-
-
-
-
